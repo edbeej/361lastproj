@@ -94,9 +94,9 @@ public class PasswordCrack {
         //for (int i = 0; i < mainDict.size(); i++)
         System.out.println("Starting threads");
         pObj.createThread(0);
-        System.out.println(map.size());
+        //System.out.println(map.size());
         pObj.createThread(1);
-        System.out.println(map.size());
+        //System.out.println(map.size());
         pObj.createThread(2);
 
     }
