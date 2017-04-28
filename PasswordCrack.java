@@ -488,7 +488,7 @@ public class PasswordCrack {
             List<String> newData = new ArrayList<>();
             for (String word: data) {
                 newData.add(word);
-                if (newData.size() > 55000) {
+                if (newData.size() > 30000) {
                     mainDict.add(newData);
                     newData = new ArrayList<>();
                 }
