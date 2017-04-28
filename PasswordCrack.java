@@ -5,10 +5,7 @@ import java.io.*;
  * Created by beej on 4/25/17.
  */
 public class PasswordCrack {
-    static List<String[]> fullName;
-    static List<String[]> passCode;
     static List<List<String>> mainDict;
-    static List<String> dict;
     static List<List<String>> jumbledNames;
     static HashMap<String, List<String>> map;
     static List<String> foundNames;
@@ -20,7 +17,7 @@ public class PasswordCrack {
                                 'p','q','r','s','t','u','v','w','x','y','z','1','2','3','4',
                                 '5','6','7','8','9','0','!','@','$','&','^','*','%','`','?','#',
                                 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q',
-                                'R','S','T','U','V','W','X','Y','Z'};
+                                'R','S','T','U','V','W','X','Y','Z','(',')','|',',','.'};
 
     public class mainThread extends Thread {
         private int mangle;
@@ -59,44 +56,33 @@ public class PasswordCrack {
                 default:
                     break;
             }
-            //tester();
-        }
-
-        public void start() {
-
         }
     }
 
     public static void main (String[] args) {
         // 0 - username  1 - first name   2 - last name
         PasswordCrack pObj = new PasswordCrack();
-
-
-        fullName = new ArrayList<>();
-        // 0 - salt    1 - hashcode
-        passCode = new ArrayList<>();
         // file name of passwords
         String filename = "passwd2";
-        dict = new ArrayList<>();
         jumbledNames = new ArrayList<>();
         // mapping
         map = new HashMap<>();
         mainDict = new ArrayList<>();
         foundNames = new ArrayList<>();
         threads = new ArrayList<>();
-//        if (args.length != 2) {
-//            System.out.println("Error: Incorrect number of arguments\nThe correct format is: java Encoder frequenciesFile k");
-//            return;
-//        } else {
-//            filename = args[0];
-//        }
 
+        if (args.length != 2) {
+            System.out.println("Error: Incorrect number of arguments\nThe correct format is: java PasswordCrack inputFile1 inputFile2");
+            return;
+        } else {
+            filename = args[1];
+        }
         readPassFile(filename);
         startTime = System.currentTimeMillis();
 
         System.out.println("Building initial Dictionaries......");
         jumbleNames();
-        readEtcFile("etc2");
+        readEtcFile(args[0]);
         System.out.println("Built initial Dictionaries: " + mainDict.size());
 
         initialNameCheck();
@@ -113,33 +99,10 @@ public class PasswordCrack {
         System.out.println(map.size());
         pObj.createThread(2);
 
-        //for (int i = 0; i < mainDict.size(); i++)
-            //pObj.createThread2(i);
-
-        //System.out.println("LLLL: " + foundNames.size());
-
-
-//        initialDictCheck(mainDict.get(0));
-//        System.out.println("Adding letters");
-//
-//        addLetters(mainDict.get(0));
-//        System.out.println("Adding letter at the beg");
-        //addLetterAtBeg();
-
-
-        //System.out.println(jcrypt.crypt("<?", "mypass"));
-
-        // read from file
-        // store salt and hashed password
-        // store first and last name
-
-
     }
 
     public void createThread(int mangle) {
-        //initialDict nObj = new initialDict();
         mainThread nObj = new mainThread();
-        //nObj.ID = ID;
         nObj.mangle = mangle;
         Thread t = new Thread(nObj);
         t.start();
@@ -155,29 +118,11 @@ public class PasswordCrack {
         } catch (InterruptedException e) {
 
         }
-//        if (ID == mainDict.size() -  1) {
-//            try{
-//                t.join();
-//                for (String key: foundNames)
-//                    map.remove(key);
-//                foundNames = new ArrayList<>();
-//            } catch (InterruptedException e) {
-//
-//            }
-//        }
     }
-
-
-    public static void tester () {
-        System.out.println("IN TESTER");
-    }
-
-
 
 
 
     public static void initialNameCheck() {
-        //HashMap<String, List<String>> map2 = new HashMap<>(map);
         List<String> keys = new ArrayList<>(map.keySet());
         for (int i = 0; i < keys.size(); i++) {
             String key = keys.get(i);
@@ -197,8 +142,6 @@ public class PasswordCrack {
     public static void initialDictCheck(List<String> dictionary) {
         List<String> keys = new ArrayList<>(map.keySet());
         for (String dictWord: dictionary) {
-            //map.keySet().removeIf(e -> check(map.get(e).get(3), dictWord, e));
-
             for (int i = 0; i < keys.size(); i++) {
                 String key = keys.get(i);
                 if (jcrypt.crypt(map.get(key).get(3), dictWord).compareTo(key) == 0) {
@@ -226,7 +169,6 @@ public class PasswordCrack {
         for (String dictWord: dictionary) {
             if (dictWord.length() < 8) {
                 for (char letter : addLetters) {
-                    //map.keySet().removeIf(e -> check(map.get(e).get(3), letter + dictWord, e) || check(map.get(e).get(3), dictWord + letter, e));
                     for (int i = 0; i < keys.size(); i++) {
                         String key = keys.get(i);
                         if (jcrypt.crypt(map.get(key).get(3), dictWord + letter).compareTo(key) == 0) {
@@ -246,7 +188,6 @@ public class PasswordCrack {
         for (String dictWord: dictionary) {
             if (dictWord.length() < 8) {
                 for (char letter : addLetters) {
-                    //map.keySet().removeIf(e -> check(map.get(e).get(3), letter + dictWord, e) || check(map.get(e).get(3), dictWord + letter, e));
                     for (int i = 0; i < keys.size(); i++) {
                         String key = keys.get(i);
                         if (jcrypt.crypt(map.get(key).get(3), letter + dictWord).compareTo(key) == 0) {
@@ -279,78 +220,6 @@ public class PasswordCrack {
 
     }
 
-    public static Set<String> permute(String chars)
-    {
-        // Use sets to eliminate semantic duplicates (aab is still aab even if you switch the two 'a's)
-        // Switch to HashSet for better performance
-        Set<String> set = new TreeSet<String>();
-
-        // Termination condition: only 1 permutation for a string of length 1
-        if (chars.length() == 1)
-        {
-            set.add(chars);
-        }
-        else
-        {
-            // Give each character a chance to be the first in the permuted string
-            for (int i=0; i<chars.length(); i++)
-            {
-                // Remove the character at index i from the string
-                String pre = chars.substring(0, i);
-                String post = chars.substring(i+1);
-                String remaining = pre+post;
-
-                // Recurse to find all the permutations of the remaining chars
-                for (String permutation : permute(remaining))
-                {
-                    // Concatenate the first character with the permutations of the remaining chars
-                    String newStr = chars.charAt(i) + permutation;
-                    // add different lengths
-                    set.add(newStr);
-
-                }
-            }
-        }
-        return set;
-    }
-
-
-    static void combine(String instr, StringBuffer outstr, int index)
-    {
-        for (int i = index; i < instr.length(); i++)
-        {
-            outstr.append(instr.charAt(i));
-            System.out.println(outstr);
-            combine(instr, outstr, i + 1);
-            outstr.deleteCharAt(outstr.length() - 1);
-        }
-    }
-
-
-    private static void generateAll(int k, char[] set, char[] str, int index) {
-        if (index == k)
-            System.out.println(new String(str));
-        else {
-            for (int i = 0; i < set.length; i++){
-                str[index] = set[i];
-                generateAll(k, set, str, index + 1);
-            }
-        }
-    }
-
-    public static void permutation(String str) {
-        permutation("", str);
-    }
-
-    private static void permutation(String prefix, String str) {
-        int n = str.length();
-        if (n == 0) System.out.println(prefix);
-        else {
-            for (int i = 0; i < n; i++)
-                permutation(prefix + str.charAt(i), str.substring(0, i) + str.substring(i+1, n));
-        }
-    }
-
 
     private static void jumbleNames () {
         for (String key: map.keySet()) {
@@ -379,33 +248,6 @@ public class PasswordCrack {
             map.put(key, data);
 
         }
-//        for (int i = 0; i < fullName.size(); i++) {
-//            List<String> newNames = new ArrayList<>();
-//            String[] names = fullName.get(i);
-//            //regular names add
-//            newNames.add(names[0]);
-//            newNames.add(names[1]);
-//            newNames.add(names[2]);
-//
-//            newNames.add(names[1] + names[2]);
-//            newNames.add(names[2] + names[1]);
-//            newNames.add(names[0] + names[2]);
-//            // add reverse
-//            newNames.add(new StringBuffer(names[0]).reverse().toString());
-//            newNames.add(new StringBuffer(names[1]).reverse().toString());
-//            newNames.add(new StringBuffer(names[2]).reverse().toString());
-//
-//            newNames.add(new StringBuffer(names[0]).reverse().toString() + names[0]);
-//            newNames.add(new StringBuffer(names[1]).reverse().toString() + names[1]);
-//            newNames.add(new StringBuffer(names[2]).reverse().toString() + names[2]);
-//
-//            newNames.add(names[0] + new StringBuffer(names[0]).reverse().toString());
-//            newNames.add(names[1] + new StringBuffer(names[1]).reverse().toString());
-//            newNames.add(names[2] + new StringBuffer(names[2]).reverse().toString());
-//
-//            jumbledNames.add(newNames);
-//        }
-
 
     }
 
@@ -416,21 +258,13 @@ public class PasswordCrack {
             String line;
 
             while ((line = br.readLine()) != null) {
-                //List<List<String>> data = new ArrayList<>();
                 List<String> linedata = new ArrayList<>();
-                String[] hash = new String[2];
                 String[] perLine = line.split(":");
                 linedata.add(perLine[0]);
                 linedata.add(perLine[4].split(" ")[0]);
                 linedata.add(perLine[4].split(" ")[1]);
                 linedata.add(perLine[1].substring(0, 2));
-                //data.add(linedata);
                 map.put(perLine[1], linedata);
-                String[] names = {perLine[0], perLine[4].split(" ")[0], perLine[4].split(" ")[1]};
-                fullName.add(names);
-                hash[0] = perLine[1].substring(0, 2);
-                hash[1] = perLine[1];
-                passCode.add(hash);
 
             }
         } catch (Exception io) {
@@ -505,17 +339,4 @@ public class PasswordCrack {
         }
     }
 
-    private static void writeEtcFile() {
-        try {
-            PrintWriter fw = new PrintWriter(new FileWriter("finaletc"));
-            for (String str : dict) {
-                fw.println(str);
-            }
-
-        } catch (Exception io) {
-
-        }
-
-
-    }
 }
