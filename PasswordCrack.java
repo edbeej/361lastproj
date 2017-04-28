@@ -7,10 +7,12 @@ import java.io.*;
 public class PasswordCrack {
     static List<String[]> fullName;
     static List<String[]> passCode;
+    static List<List<String>> mainDict;
     static List<String> dict;
     static List<List<String>> jumbledNames;
     static HashMap<String, List<String>> map;
-
+    static List<String> foundNames;
+    static List<Thread> threads;
     static long startTime;
     static long endTime;
     static int foundNum = 0;
@@ -18,19 +20,68 @@ public class PasswordCrack {
                                 'p','q','r','s','t','u','v','w','x','y','z','1','2','3','4',
                                 '5','6','7','8','9','0','!','@','$','&','^','*'};
 
+    public class mainThread extends Thread {
+        private int mangle;
+        public void run() {
+            for (int i = 0; i < mainDict.size(); i++) {
+                initialDict nObj = new initialDict();
+                //mainThread nObj = new mainThread();
+                nObj.ID = i;
+                nObj.mangle = mangle;
+                Thread t = new Thread(nObj);
+                threads.add(t);
+                t.start();
+            }
+        }
+
+        public void start() {
+
+        }
+    }
+
+    public class initialDict extends Thread {
+        private int mangle;
+        private int ID;
+        public void run() {
+            //System.out.println("Length: " + mainDict.size() + " " + ID);
+            switch (mangle) {
+                case 0:
+                    initialDictCheck(mainDict.get(ID));
+                    break;
+                case 1:
+                    addLettersEnd(mainDict.get(ID));
+                    break;
+                case 2:
+                    addLetterBeg(mainDict.get(ID));
+                    break;
+                default:
+                    break;
+            }
+            //tester();
+        }
+
+        public void start() {
+
+        }
+    }
+
     public static void main (String[] args) {
         // 0 - username  1 - first name   2 - last name
+        PasswordCrack pObj = new PasswordCrack();
+
 
         fullName = new ArrayList<>();
         // 0 - salt    1 - hashcode
         passCode = new ArrayList<>();
         // file name of passwords
-        String filename = "src/passwd1";
+        String filename = "passwd2";
         dict = new ArrayList<>();
         jumbledNames = new ArrayList<>();
         // mapping
         map = new HashMap<>();
-
+        mainDict = new ArrayList<>();
+        foundNames = new ArrayList<>();
+        threads = new ArrayList<>();
 //        if (args.length != 2) {
 //            System.out.println("Error: Incorrect number of arguments\nThe correct format is: java Encoder frequenciesFile k");
 //            return;
@@ -43,16 +94,36 @@ public class PasswordCrack {
 
         System.out.println("Building initial Dictionaries......");
         jumbleNames();
-        readEtcFile("src/etc2");
-        System.out.println("Built initial Dicitonaries");
+        readEtcFile("etc2");
+        System.out.println("Built initial Dictionaries: " + mainDict.size());
 
         initialNameCheck();
-        initialDictCheck();
-        System.out.println("Adding letters");
+        for (String key: foundNames)
+            map.remove(key);
+        foundNames = new ArrayList<>();
+        //multithread
 
-        addLetters();
-        System.out.println("Adding letter at the beg");
+        //for (int i = 0; i < mainDict.size(); i++)
+        System.out.println("Starting threads");
+        pObj.createThread(0);
+        System.out.println(map.size());
+        pObj.createThread(1);
+        System.out.println(map.size());
+        pObj.createThread(2);
+
+        //for (int i = 0; i < mainDict.size(); i++)
+            //pObj.createThread2(i);
+
+        //System.out.println("LLLL: " + foundNames.size());
+
+
+//        initialDictCheck(mainDict.get(0));
+//        System.out.println("Adding letters");
+//
+//        addLetters(mainDict.get(0));
+//        System.out.println("Adding letter at the beg");
         //addLetterAtBeg();
+
 
         //System.out.println(jcrypt.crypt("<?", "mypass"));
 
@@ -62,6 +133,44 @@ public class PasswordCrack {
 
 
     }
+
+    public void createThread(int mangle) {
+        //initialDict nObj = new initialDict();
+        mainThread nObj = new mainThread();
+        //nObj.ID = ID;
+        nObj.mangle = mangle;
+        Thread t = new Thread(nObj);
+        t.start();
+
+        try {
+            t.join();
+            for (Thread thread: threads)
+                thread.join();
+
+            for (String key: foundNames)
+                map.remove(key);
+            foundNames = new ArrayList<>();
+        } catch (InterruptedException e) {
+
+        }
+//        if (ID == mainDict.size() -  1) {
+//            try{
+//                t.join();
+//                for (String key: foundNames)
+//                    map.remove(key);
+//                foundNames = new ArrayList<>();
+//            } catch (InterruptedException e) {
+//
+//            }
+//        }
+    }
+
+
+    public static void tester () {
+        System.out.println("IN TESTER");
+    }
+
+
 
 
 
@@ -83,20 +192,20 @@ public class PasswordCrack {
 
     }
 
-    public static void initialDictCheck() {
-        //List<String> keys = new ArrayList<>(map.keySet());
-        for (String dictWord: dict) {
-            map.keySet().removeIf(e -> check(map.get(e).get(3), dictWord, e));
+    public static void initialDictCheck(List<String> dictionary) {
+        List<String> keys = new ArrayList<>(map.keySet());
+        for (String dictWord: dictionary) {
+            //map.keySet().removeIf(e -> check(map.get(e).get(3), dictWord, e));
 
-//            for (int i = 0; i < keys.size(); i++) {
-//                String key = keys.get(i);
-//                if (jcrypt.crypt(map.get(key).get(3), dictWord).compareTo(key) == 0) {
-//                    foundPass(key, dictWord);
-//                    keys.remove(i);
-//                    i--;
-//                    break;
-//                }
-//            }
+            for (int i = 0; i < keys.size(); i++) {
+                String key = keys.get(i);
+                if (jcrypt.crypt(map.get(key).get(3), dictWord).compareTo(key) == 0) {
+                    foundPass(key, dictWord);
+                    keys.remove(i);
+                    i--;
+                    break;
+                }
+            }
         }
 
     }
@@ -110,39 +219,37 @@ public class PasswordCrack {
     }
 
 
-    public static void addLetters() {
-        //List<String> keys = new ArrayList<>(map.keySet());
-        for (String dictWord: dict) {
+    public static void addLettersEnd(List<String> dictionary) {
+        List<String> keys = new ArrayList<>(map.keySet());
+        for (String dictWord: dictionary) {
             if (dictWord.length() < 8) {
                 for (char letter : addLetters) {
-                    map.keySet().removeIf(e -> check(map.get(e).get(3), letter + dictWord, e) || check(map.get(e).get(3), dictWord + letter, e));
-//                    for (int i = 0; i < keys.size(); i++) {
-//                        String key = keys.get(i);
-//                        if (jcrypt.crypt(map.get(key).get(3), dictWord + letter).compareTo(key) == 0) {
-//                            foundPass(key, dictWord + letter);
-//                            keys.remove(i);
-//                            i--;
-//                            break;
-//                        } else if (jcrypt.crypt(map.get(key).get(3), letter + dictWord).compareTo(key) == 0) {
-//                            foundPass(key, letter + dictWord);
-//                            keys.remove(i);
-//                            i--;
-//                            break;
-//                        }
-//                    }
+                    //map.keySet().removeIf(e -> check(map.get(e).get(3), letter + dictWord, e) || check(map.get(e).get(3), dictWord + letter, e));
+                    for (int i = 0; i < keys.size(); i++) {
+                        String key = keys.get(i);
+                        if (jcrypt.crypt(map.get(key).get(3), dictWord + letter).compareTo(key) == 0) {
+                            foundPass(key, dictWord + letter);
+                            keys.remove(i);
+                            i--;
+                            break;
+                        }
+                    }
                 }
             }
         }
     }
 
-    public static void addLetterAtBeg() {
-
-        for (String dictWord: dict) {
+    public static void addLetterBeg(List<String> dictionary) {
+        List<String> keys = new ArrayList<>(map.keySet());
+        for (String dictWord: dictionary) {
             if (dictWord.length() < 8) {
                 for (char letter : addLetters) {
-                    for (int i = 0; i < passCode.size(); i++) {
-                        if (jcrypt.crypt(passCode.get(i)[0], letter + dictWord).compareTo(passCode.get(i)[1]) == 0) {
-                            //foundPass(i, letter + dictWord);
+                    //map.keySet().removeIf(e -> check(map.get(e).get(3), letter + dictWord, e) || check(map.get(e).get(3), dictWord + letter, e));
+                    for (int i = 0; i < keys.size(); i++) {
+                        String key = keys.get(i);
+                        if (jcrypt.crypt(map.get(key).get(3), letter + dictWord).compareTo(key) == 0) {
+                            foundPass(key, letter + dictWord);
+                            keys.remove(i);
                             i--;
                             break;
                         }
@@ -157,7 +264,8 @@ public class PasswordCrack {
         endTime = (System.currentTimeMillis() - startTime)/1000;
         System.out.printf("Found %d/20\n", foundNum);
         System.out.printf("Found password for %s, the password was '%s', found in %d seconds\n", map.get(key).get(1) + " " + map.get(key).get(2), dictWord, endTime);
-        map.remove(key);
+        //map.remove(key);
+        foundNames.add(key);
 
     }
 
@@ -301,27 +409,26 @@ public class PasswordCrack {
 
 
     private static void readPassFile (String filename) {
+
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
 
             while ((line = br.readLine()) != null) {
-                List<List<String>> data = new ArrayList<>();
+                //List<List<String>> data = new ArrayList<>();
                 List<String> linedata = new ArrayList<>();
-
                 String[] hash = new String[2];
                 String[] perLine = line.split(":");
                 linedata.add(perLine[0]);
                 linedata.add(perLine[4].split(" ")[0]);
                 linedata.add(perLine[4].split(" ")[1]);
                 linedata.add(perLine[1].substring(0, 2));
-                data.add(linedata);
+                //data.add(linedata);
                 map.put(perLine[1], linedata);
                 String[] names = {perLine[0], perLine[4].split(" ")[0], perLine[4].split(" ")[1]};
                 fullName.add(names);
                 hash[0] = perLine[1].substring(0, 2);
                 hash[1] = perLine[1];
                 passCode.add(hash);
-
 
             }
         } catch (Exception io) {
@@ -333,36 +440,62 @@ public class PasswordCrack {
     private static void readEtcFile (String filename) {
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
-
+            HashSet<String> data = new HashSet<>();
+            int count = 0;
             while ((line = br.readLine()) != null) {
-                dict.add(line);
-                dict.add(line.toUpperCase());
+                String reversed;
+                if (line.length() > 8) {
+                    reversed = new StringBuffer(line).reverse().toString().substring(0,8);
+                    data.add(reversed);
+                    line = line.substring(0, 8);
+                    data.add(line);
+                    data.add(line.toUpperCase());
+                } else {
+                    data.add(line);
+                    data.add(line.toUpperCase());
+                    reversed = new StringBuffer(line).reverse().toString();
+                    data.add(reversed);
+                }
                 String _first = line.substring(0, line.length() - 1);
                 String _last = line.substring(1, line.length());
-                dict.add(_first);
-                dict.add(_last);
+                data.add(_first);
+                data.add(_last);
+
                 if (line.length() > 2 && line.length() < 9) {
-                    dict.add(_first.substring(0, 1) + _first.substring(1, _first.length()).toUpperCase());
-                    dict.add(_first.substring(0, 1).toUpperCase() + _first.substring(1, _first.length()));
-                    dict.add(new StringBuffer(_first.substring(0, 1).toUpperCase() + _first.substring(1, _first.length())).reverse().toString());
+                    data.add(_first.substring(0, 1) + _first.substring(1, _first.length()).toUpperCase());
+                    data.add(_first.substring(0, 1).toUpperCase() + _first.substring(1, _first.length()));
+                    data.add(new StringBuffer(_first.substring(0, 1).toUpperCase() + _first.substring(1, _first.length())).reverse().toString());
 
-                    dict.add(_last.substring(0, 1) + _last.substring(1, _last.length()).toUpperCase());
-                    dict.add(_last.substring(0, 1).toUpperCase() + _last.substring(1, _last.length()));
-                    dict.add(new StringBuffer(_last.substring(0, 1).toUpperCase() + _last.substring(1, _last.length())).reverse().toString());
+                    data.add(_last.substring(0, 1) + _last.substring(1, _last.length()).toUpperCase());
+                    data.add(_last.substring(0, 1).toUpperCase() + _last.substring(1, _last.length()));
+                    data.add(new StringBuffer(_last.substring(0, 1).toUpperCase() + _last.substring(1, _last.length())).reverse().toString());
 
-                    dict.add(line.substring(0, 1) + line.substring(1, line.length()).toUpperCase());
-                    dict.add(line.substring(0, 1).toUpperCase() + line.substring(1, line.length()));
-                    dict.add(new StringBuffer(line.substring(0, 1).toUpperCase() + line.substring(1, line.length())).reverse().toString());
+                    data.add(line.substring(0, 1) + line.substring(1, line.length()).toUpperCase());
+                    data.add(line.substring(0, 1).toUpperCase() + line.substring(1, line.length()));
+                    data.add(new StringBuffer(line.substring(0, 1).toUpperCase() + line.substring(1, line.length())).reverse().toString());
 
                 }
-                dict.add(line + line);
 
-                String reversed = new StringBuffer(line).reverse().toString();
-                dict.add(reversed);
                 if (line.length() < 8) {
-                    dict.add(line + reversed);
-                    dict.add(reversed + line);
+                    data.add(line + line);
+                    data.add(line + reversed);
+                    data.add(reversed + line);
                 }
+
+
+            }
+
+            List<String> newData = new ArrayList<>();
+            for (String word: data) {
+                newData.add(word);
+                if (newData.size() > 55000) {
+                    mainDict.add(newData);
+                    newData = new ArrayList<>();
+                }
+
+            }
+            if (newData.size() > 0) {
+                mainDict.add(newData);
             }
         } catch (Exception io) {
             System.out.println(io);
