@@ -171,7 +171,7 @@ public class PasswordCrack {
         while (true) {
             StringBuilder str = new StringBuilder();
             for (int i = 0; i < 8; i++) {
-                str.append(addLetters[ThreadLocalRandom.current().nextInt(0, addLetters.length + 1)]);
+                str.append(addLetters[ThreadLocalRandom.current().nextInt(0, addLetters.length)]);
             }
 
             for (String key: keys) {
