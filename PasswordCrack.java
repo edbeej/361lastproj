@@ -192,7 +192,7 @@ public class PasswordCrack {
             StringBuilder str2 = new StringBuilder();
             int count = 1;
             for (char c : dictWord.toCharArray()) {
-                if (count % 1 == 0) {
+                if (count % 2 == 0) {
                     str1.append(Character.toString(c).toUpperCase());
                     str2.append(c);
                 } else {
