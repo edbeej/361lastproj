@@ -1,5 +1,6 @@
 import java.util.*;
 import java.io.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by beej on 4/25/17.
@@ -53,6 +54,12 @@ public class PasswordCrack {
                 case 2:
                     addLetterBeg(mainDict.get(ID));
                     break;
+                case 3:
+                    alternatingCaps(mainDict.get(ID));
+                    break;
+                case 4:
+                    randomLetters();
+                    break;
                 default:
                     break;
             }
@@ -98,6 +105,10 @@ public class PasswordCrack {
         pObj.createThread(1);
         //System.out.println(map.size());
         pObj.createThread(2);
+        pObj.createThread(3);
+        System.out.println("Attempting random letters");
+        pObj.createThread(4);
+
 
     }
 
@@ -155,14 +166,56 @@ public class PasswordCrack {
 
     }
 
-    public static boolean check(String pre, String word, String hash) {
-        if (jcrypt.crypt(pre, word).compareTo(hash) == 0) {
-            foundPass2(hash, word);
-            return true;
+    public static void randomLetters() {
+        List<String> keys = new ArrayList<>(map.keySet());
+        while (true) {
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < 8; i++) {
+                str.append(addLetters[ThreadLocalRandom.current().nextInt(0, addLetters.length + 1)]);
+            }
+
+            for (String key: keys) {
+                if (jcrypt.crypt(map.get(key).get(3), str.toString()).compareTo(key) == 0) {
+                    foundPass(key, str.toString());
+                    break;
+                }
+            }
+            if (foundNum == 20)
+                return;
         }
-        return false;
     }
 
+    public static void alternatingCaps (List<String> dictionary) {
+        List<String> keys = new ArrayList<>(map.keySet());
+        for (String dictWord: dictionary) {
+            StringBuilder str1 = new StringBuilder();
+            StringBuilder str2 = new StringBuilder();
+            int count = 1;
+            for (char c : dictWord.toCharArray()) {
+                if (count % 1 == 0) {
+                    str1.append(Character.toString(c).toUpperCase());
+                    str2.append(c);
+                } else {
+                    str2.append(Character.toString(c).toUpperCase());
+                    str1.append(c);
+                }
+                count++;
+            }
+
+            for (int i = 0; i < keys.size(); i++) {
+                String key = keys.get(i);
+                if (jcrypt.crypt(map.get(key).get(3), str1.toString()).compareTo(key) == 0) {
+                    foundPass(key, str1.toString());
+                    keys.remove(i);
+                    i--;
+                } else if (jcrypt.crypt(map.get(key).get(3), str2.toString()).compareTo(key) == 0) {
+                    foundPass(key, str2.toString());
+                    keys.remove(i);
+                    i--;
+                }
+            }
+        }
+    }
 
     public static void addLettersEnd(List<String> dictionary) {
         List<String> keys = new ArrayList<>(map.keySet());
