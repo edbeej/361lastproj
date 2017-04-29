@@ -105,7 +105,7 @@ public class PasswordCrack {
         pObj.createThread(1);
         //System.out.println(map.size());
         pObj.createThread(2);
-        pObj.createThread(3);
+        //pObj.createThread(3);
         System.out.println("Attempting random letters");
         pObj.createThread(4);
 
@@ -370,6 +370,21 @@ public class PasswordCrack {
                     data.add(line + reversed);
                     data.add(reversed + line);
                 }
+                StringBuilder str1 = new StringBuilder();
+                StringBuilder str2 = new StringBuilder();
+                int count2 = 0;
+                for (char c : line.toCharArray()) {
+                    if (count % 2 == 0) {
+                        str1.append(Character.toString(c).toUpperCase());
+                        str2.append(c);
+                    } else {
+                        str2.append(Character.toString(c).toUpperCase());
+                        str1.append(c);
+                    }
+                    count2++;
+                }
+                data.add(str1.toString());
+                data.add(str2.toString());
 
 
             }
