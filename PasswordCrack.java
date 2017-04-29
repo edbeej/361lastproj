@@ -55,9 +55,6 @@ public class PasswordCrack {
                     addLetterBeg(mainDict.get(ID));
                     break;
                 case 3:
-                    alternatingCaps(mainDict.get(ID));
-                    break;
-                case 4:
                     randomLetters();
                     break;
                 default:
@@ -105,9 +102,8 @@ public class PasswordCrack {
         pObj.createThread(1);
         //System.out.println(map.size());
         pObj.createThread(2);
-        //pObj.createThread(3);
         System.out.println("Attempting random letters");
-        pObj.createThread(4);
+        pObj.createThread(3);
 
 
     }
@@ -185,38 +181,6 @@ public class PasswordCrack {
         }
     }
 
-    public static void alternatingCaps (List<String> dictionary) {
-        List<String> keys = new ArrayList<>(map.keySet());
-        for (String dictWord: dictionary) {
-            StringBuilder str1 = new StringBuilder();
-            StringBuilder str2 = new StringBuilder();
-            int count = 1;
-            for (char c : dictWord.toCharArray()) {
-                if (count % 2 == 0) {
-                    str1.append(Character.toString(c).toUpperCase());
-                    str2.append(c);
-                } else {
-                    str2.append(Character.toString(c).toUpperCase());
-                    str1.append(c);
-                }
-                count++;
-            }
-
-            for (int i = 0; i < keys.size(); i++) {
-                String key = keys.get(i);
-                if (jcrypt.crypt(map.get(key).get(3), str1.toString()).compareTo(key) == 0) {
-                    foundPass(key, str1.toString());
-                    keys.remove(i);
-                    i--;
-                } else if (jcrypt.crypt(map.get(key).get(3), str2.toString()).compareTo(key) == 0) {
-                    foundPass(key, str2.toString());
-                    keys.remove(i);
-                    i--;
-                }
-            }
-        }
-    }
-
     public static void addLettersEnd(List<String> dictionary) {
         List<String> keys = new ArrayList<>(map.keySet());
         for (String dictWord: dictionary) {
@@ -264,15 +228,6 @@ public class PasswordCrack {
         foundNames.add(key);
 
     }
-
-    public static void foundPass2(String key, String dictWord) {
-        foundNum++;
-        endTime = (System.currentTimeMillis() - startTime)/1000;
-        System.out.printf("Found %d/20\n", foundNum);
-        System.out.printf("Found password for %s, the password was '%s', found in %d seconds\n", map.get(key).get(1) + " " + map.get(key).get(2), dictWord, endTime);
-
-    }
-
 
     private static void jumbleNames () {
         for (String key: map.keySet()) {
@@ -370,6 +325,9 @@ public class PasswordCrack {
                     data.add(line + reversed);
                     data.add(reversed + line);
                 }
+
+                //Alternating caps
+
                 StringBuilder str1 = new StringBuilder();
                 StringBuilder str2 = new StringBuilder();
                 int count2 = 0;

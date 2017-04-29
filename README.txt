@@ -114,3 +114,43 @@ maria:!cSaQELm/EBV.:518:518:Maia Salizar:/home/maria:/bin/zsh
 paige:T8U5jQaDVv/o2:519:519:Paige Reiser:/home/paige:/bin/bash
 
 [Output]
+
+Building initial Dictionaries......
+Built initial Dictionaries: 39
+Starting threads
+Found 1/20
+Found password for Alexander Brown, the password was 'Lacque', found in 1 seconds
+Found 2/20
+Found password for Nicole Rizzo, the password was 'INDIGNIT', found in 3 seconds
+Found 3/20
+Found password for Jack Gibson, the password was 'ellows', found in 6 seconds
+Found 4/20
+Found password for Abigail Smith, the password was 'Saxon', found in 6 seconds
+Found 5/20
+Found password for Morgan Simmons, the password was 'dIAMETER', found in 6 seconds
+Found 6/20
+Found password for Tyler Jones, the password was 'eltneg', found in 8 seconds
+Found 7/20
+Found password for Michael Ferris, the password was 'tremors', found in 8 seconds
+Found 8/20
+Found password for Caleb Patterson, the password was 'zoossooz', found in 8 seconds
+Found 9/20
+Found password for Benjamin Ewing, the password was 'soozzoos', found in 8 seconds
+Found 10/20
+Found password for James Dover, the password was 'enchant$', found in 28 seconds
+Found 11/20
+Found password for Connor Larson, the password was 'nosral', found in 37 seconds
+Found 12/20
+Found password for Maia Salizar, the password was 'SpatteR', found in 85 seconds
+Found 13/20
+Found password for Dustin Hart, the password was 'Swine3', found in 121 seconds
+Found 14/20
+Found password for Nathan Moore, the password was 'uPLIFTr', found in 212 seconds
+Found 15/20
+Found password for Evan Whitney, the password was '^bribed', found in 270 seconds
+
+
+In total, I can crack 15/20 password in time 270 seconds.
+I can not crack 5/20 password, the list is
+
+paige
